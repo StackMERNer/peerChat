@@ -2,6 +2,14 @@ let localStream;
 let remoteStream;
 let peerConnection;
 
+const servers = {
+  iceServers: [
+    {
+      urls: ["stun:stun1.l.google.com:19302", "stun:stun2.l.google.com:19302"],
+    },
+  ],
+};
+
 let init = async () => {
   if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
     // Handle case where getUserMedia is not supported
@@ -32,10 +40,20 @@ let init = async () => {
 };
 
 let createOffer = async () => {
-  peerConnection = new RTCPeerConnection();
+  peerConnection = new RTCPeerConnection(servers);
 
   remoteStream = new MediaStream();
   document.getElementById("user-2").srcObject = remoteStream;
+
+  localStream.getTracks().forEach((track) => {
+    peerConnection.addTrack(track, localStream);
+  });
+
+  peerConnection.ontrack = (event) => {
+    event.streams[0].getTracks().forEach((track) => {
+      remoteStream.addTrack();
+    });
+  };
 
   let offer = await peerConnection.createOffer();
   await peerConnection.setLocalDescription(offer);
