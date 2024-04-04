@@ -1,11 +1,6 @@
 let localStream;
 let remoteStream;
-console.log("hellox");
-// let init = async () => {
-//   localStream = await navigator.mediaDevices.getUserMedia({ video: true });
-
-//   document.getElementById("user-1").srcObject = localStream;
-// };
+let peerConnection;
 
 let init = async () => {
   if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
@@ -30,11 +25,22 @@ let init = async () => {
       video: true,
     });
     document.getElementById("user-1").srcObject = localStream;
+    createOffer();
   } catch (error) {
     console.error("Error accessing user media:", error);
   }
 };
 
-init();
+let createOffer = async () => {
+  peerConnection = new RTCPeerConnection();
+
+  remoteStream = new MediaStream();
+  document.getElementById("user-2").srcObject = remoteStream;
+
+  let offer = await peerConnection.createOffer();
+  await peerConnection.setLocalDescription(offer);
+
+  console.log("offer", offer);
+};
 
 init();
